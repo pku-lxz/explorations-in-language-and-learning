@@ -47,8 +47,8 @@ class Mdoel:
         # 1. Embedding
         target_vocab_size = len(target_letter_to_int)
         decoder_embeddings = tf.Variable(tf.random_uniform([target_vocab_size, self.decoding_embedding_size]))
-        decoder_embed_input = tf.nn.embedding_lookup(decoder_embeddings, decoder_input)
-
+        decoder_embed_input = tf.contrib.layers.embed_sequence(decoder_input, target_vocab_size,
+                                                               self.decoding_embedding_size)
         # 2. 构造Decoder中的RNN单元
         def get_decoder_cell(rnn_size):
             decoder_cell = tf.contrib.rnn.LSTMCell(rnn_size,
@@ -101,7 +101,6 @@ class Mdoel:
         # cut掉最后一个字符
         ending = tf.strided_slice(data, [0, 0], [batch_size, -1], [1, 1])
         decoder_input = tf.concat([tf.fill([batch_size, 1], vocab_to_int['<GO>']), ending], 1)
-
         return decoder_input
 
     def seq2seq_model(self, input_data, targets, target_sequence_length,
@@ -121,3 +120,4 @@ class Mdoel:
                                                                             decoder_input)
 
         return training_decoder_output, predicting_decoder_output
+

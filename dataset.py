@@ -59,11 +59,10 @@ class DataSet:
         返回
         input 和 output
         """
-        dic = dict(self.english_2_index_dict, **self.chinese_2_index_dict)
         X, y = [], []
         for idx, sentence in enumerate(data):
-            X.append([dic[word] for word in sentence[0]])
-            y.append([dic[word] for word in sentence[1]])
+            X.append([self.english_2_index_dict[word] for word in sentence[0]])
+            y.append([self.chinese_2_index_dict[word] for word in sentence[1]])
         return self.padding_sentence(X), self.padding_sentence(y)
 
     @staticmethod
@@ -88,20 +87,37 @@ class DataSet:
         生成一个epoch
         """
         idx = list(range(self.size))
-        np.random.shuffle(idx)
-        start = 0
-        while start < self.size:
-            end = start + self.batch_size
-            pad_targets_batch, pad_sources_batch = self.raw_data_generator([self.train[i_] for i_ in idx[start:end]])
-            # 记录每条记录的长度
-            targets_lengths, source_lengths = [], []
-            for target, source in [self.train[i_] for i_ in idx[start:end]]:
-                targets_lengths.append(len(target))
-                source_lengths.append(len(source))
-            yield pad_targets_batch, pad_sources_batch, targets_lengths, source_lengths
-            start = end
+        if self.ds_name == "train":
+            np.random.shuffle(idx)
+            start = 0
+            while start < self.size:
+                end = start + self.batch_size
+                pad_targets_batch, pad_sources_batch = self.raw_data_generator([self.train[i_] for i_ in idx[start:end]])
+                # 记录每条记录的长度
+                targets_lengths, source_lengths = [], []
+                for target, source in [self.train[i_] for i_ in idx[start:end]]:
+                    targets_lengths.append(len(target))
+                    source_lengths.append(len(source))
+                yield pad_targets_batch, pad_sources_batch, targets_lengths, source_lengths
+                start = end
+        else:
+            start = 0
+            while start < self.size:
+                end = start + self.batch_size
+                pad_targets_batch, pad_sources_batch = self.raw_data_generator(
+                    [self.test[i_] for i_ in idx[start:end]])
+                # 记录每条记录的长度
+                targets_lengths, source_lengths = [], []
+                for target, source in [self.test[i_] for i_ in idx[start:end]]:
+                    targets_lengths.append(len(target))
+                    source_lengths.append(len(source))
+                yield pad_targets_batch, pad_sources_batch, targets_lengths, source_lengths
+                start = end
 
 
 if __name__ == '__main__':
     d = DataSet('train')
+    for i in d.one_epoch_generator():
+        print(i)
+        break
 

@@ -6,6 +6,10 @@ import os
 
 
 def train():
+    m = Mdoel()
+    data_train = DataSet('train')
+    data_test = DataSet('test')
+
     def get_inputs():
         """
         模型输入tensor
@@ -21,11 +25,8 @@ def train():
 
         return inputs, targets, learning_rate, target_sequence_length, max_target_sequence_length, source_sequence_length
 
-    m = Mdoel()
-    data_train = DataSet('train')
     # 构造graph
     train_graph = tf.Graph()
-    data_test = DataSet('test')
     valid_targets_batch, valid_sources_batch, valid_targets_lengths, valid_sources_lengths = next(data_test.one_epoch_generator())
     source_letter_to_int = data_train.chinese_2_index_dict
     target_letter_to_int = data_train.english_2_index_dict
@@ -38,11 +39,10 @@ def train():
                                                                              target_sequence_length,
                                                                              max_target_sequence_length,
                                                                              source_sequence_length,
-                                                                             len(source_letter_to_int),
-                                                                             target_letter_to_int)
+                                                                             source_vocab_size=len(source_letter_to_int),
+                                                                             target_letter_to_int=target_letter_to_int)
 
         training_logits = tf.identity(training_decoder_output.rnn_output, 'logits')
-        predicting_logits = tf.identity(predicting_decoder_output.sample_id, name='predictions')
 
         masks = tf.sequence_mask(target_sequence_length, max_target_sequence_length, dtype=tf.float32, name='masks')
 
@@ -72,17 +72,19 @@ def train():
     with tf.Session(graph=train_graph) as sess:
         sess.run(tf.global_variables_initializer())
 
+        print('Initialiation finished!')
+
         for epoch_i in range(1, Config.epochs + 1):
             for batch_i, (targets_batch, sources_batch, targets_lengths, sources_lengths) in enumerate(
                     data_train.one_epoch_generator()):
-                _, loss = sess.run(
-                    [train_op, cost],
-                    {input_data: sources_batch,
+                _, loss, summary = sess.run(
+                    [train_op, cost, merged],
+                    feed_dict={input_data: sources_batch,
                      targets: targets_batch,
                      lr: Config.learning_rate,
                      target_sequence_length: targets_lengths,
                      source_sequence_length: sources_lengths})
-
+                summary_writer.add_summary(summary, epoch_i)
                 if batch_i % Config.display_step == 0:
                     # 计算validation loss
                     validation_loss = sess.run(

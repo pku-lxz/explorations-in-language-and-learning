@@ -9,7 +9,7 @@ class Config:
     train_size = 18000
     test_size = 21007 - train_size
     encoder_embeding_size = 20
-    decoder_embeding_size = 20
+    decoder_embeding_size = 15
     batch_size = 64
     learning_rate = 0.01
 
@@ -21,4 +21,4 @@ class Config:
     num_layers = 28
 
     display_step = 50  # 每隔50轮输出loss
-    epochs = 20
+    epochs = 200
