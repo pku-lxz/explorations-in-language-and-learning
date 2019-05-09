@@ -7,7 +7,7 @@ import random
 import numpy as np
 import tensorflow as tf
 import pickle
-
+import nltk
 
 class DataSet:
     def __init__(self, dataset_name, read_from_pkl=True):
@@ -24,6 +24,8 @@ class DataSet:
                 else:
                     break
         random.shuffle(self.dataset)
+        for i, bi_tuple in enumerate(self.dataset):
+            self.dataset[i][0] = nltk.word_tokenize(bi_tuple[0])
         self.train, self.test = self.dataset[:Config.train_size], self.dataset[Config.train_size:]
         self.size = Config.train_size if self.ds_name == 'train' else Config.test_size
         if read_from_pkl:
@@ -116,7 +118,7 @@ class DataSet:
 
 
 if __name__ == '__main__':
-    d = DataSet('train')
+    d = DataSet('train', False)
     for i in d.one_epoch_generator():
         print(i)
         break

@@ -21,4 +21,4 @@ class Config:
     num_layers = 28
 
     display_step = 50  # 每隔50轮输出loss
-    epochs = 200
+    epochs = 20

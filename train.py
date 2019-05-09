@@ -116,5 +116,6 @@ def train():
         saver.save(sess, checkpoint)
         print('Model Trained and Saved')
 
+
 if __name__ == '__main__':
     train()
