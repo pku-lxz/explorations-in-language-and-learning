@@ -3,7 +3,15 @@ from model import Mdoel
 from dataset import DataSet
 from common import Config
 import os
+import nltk
+import rouge
 
+# hypothesis = ['It', 'is', 'a', 'cat', 'at', 'room']
+# reference = ['It', 'is', 'a', 'cat', 'inside', 'the', 'room']
+# #there may be several references
+# BLEUscore = nltk.translate.bleu_score.sentence_bleu([reference], hypothesis)
+
+checkpoint = os.path.join(Config.model_save_dir, "/trained_model.ckpt")
 
 def train():
     m = Mdoel()
@@ -105,9 +113,8 @@ def train():
 
         # 保存模型
         saver = tf.train.Saver()
-        saver.save(sess, Config.model_save_dir)
+        saver.save(sess, checkpoint)
         print('Model Trained and Saved')
-
 
 if __name__ == '__main__':
     train()
